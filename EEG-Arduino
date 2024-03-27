@@ -1,0 +1,30 @@
+import serial
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+# Setup serial port
+ser = serial.Serial('/dev/tty.YOUR_ARDUINO_SERIAL_PORT', 9600)
+fig, ax = plt.subplots()
+x_data, y_data = [], []
+line, = plt.plot([], [], '-')
+
+# This function is called before the animation starts
+
+def init():
+    ax.set_xlim(0, 1000)  # Assuming you want to show 1000 samples on the x-axis
+    ax.set_ylim(0, 1023)  # ADC range from 0 to 1023
+    return line,
+
+# This function updates the plot with new data
+def update(frame):
+    data = ser.readline().decode('utf-8').strip()
+    y_data.append(int(data))
+    x_data.append(len(y_data))
+    x_data = x_data[-1000:]  # Keep last 1000 samples
+    y_data = y_data[-1000:]  # Keep last 1000 samples
+    line.set_data(x_data, y_data)
+    return line,
+
+# Creates animation
+ani = FuncAnimation(fig, update, init_func=init, blit=True)
+plt.show()
